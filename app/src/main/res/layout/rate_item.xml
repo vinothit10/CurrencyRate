@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:layout_height="wrap_content">
+
+
+
+    <ImageView
+            android:id="@+id/ivThumbnail"
+            android:layout_width="86dp"
+            android:layout_height="66dp"
+            android:layout_alignParentLeft="true"
+            android:src="@android:drawable/ic_delete"
+            android:scaleType="fitCenter"
+            />
+
+    <EditText
+            android:id="@+id/rate_value"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:inputType="number"
+            android:lineSpacingExtra="5sp"
+            android:focusable="true" android:focusableInTouchMode="true"
+            android:textSize="16sp" />
+</RelativeLayout>
