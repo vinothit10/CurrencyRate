@@ -10,9 +10,11 @@ import com.revolut.currencyrate.model.Rates
 
 object RateHelper {
 
+    var baseCurrency: String = "EUR"
+    var baseValue: Double = 1.0
 
     @JvmStatic
-    fun getRateList(rates: Rates, baseValue: Double) :  MutableLiveData<List<RateItem>> {
+    fun getRateList(rates: Rates) :  MutableLiveData<List<RateItem>> {
         var rateLiveData = MutableLiveData<List<RateItem>>()
         synchronized(Object()) {
             var rateList = mutableListOf<RateItem>()

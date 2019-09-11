@@ -17,5 +17,4 @@ data class Rates(
     @Expose
     val rateList: Map<String, Double>? = null
 
-
 )

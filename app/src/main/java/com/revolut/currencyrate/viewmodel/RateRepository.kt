@@ -28,7 +28,7 @@ class RateRepository {
 
                     val response = request.await()
                     val rateResponse = response
-                    rateLiveData = RateHelper.getRateList(rateResponse,1.0)
+                    rateLiveData = RateHelper.getRateList(rateResponse)
 
                 } catch (e: HttpException) {
                     Log.e(TAG, "Error while fetching api response", e)

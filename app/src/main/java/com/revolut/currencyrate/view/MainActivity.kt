@@ -1,6 +1,5 @@
 package com.revolut.currencyrate.view
 
-import android.content.res.Configuration
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -8,8 +7,10 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import com.google.gson.Gson
 import com.revolut.currencyrate.R
 import com.revolut.currencyrate.model.RateItem
+import com.revolut.currencyrate.utils.RateHelper
 import com.revolut.currencyrate.viewmodel.MainViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent
@@ -40,35 +41,26 @@ class MainActivity : AppCompatActivity(),RateAdapter.RateAdapterInterface {
 
         mainViewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
         swiperefresh.setOnRefreshListener { fetchRateValues() }
-        startSericeCall()
-
-        KeyboardVisibilityEvent.setEventListener(
-            this,
-            object : KeyboardVisibilityEventListener {
-                override fun onVisibilityChanged(isOpen: Boolean) {
-                    if(isOpen)
-                        stopSericeCall()
-                    else
-                        startSericeCall()
-                }
-            })
+        handler.post(runnable)
     }
 
 
     fun fetchRateValues() {
         swiperefresh.setRefreshing(false)
         mainViewModel?.allRates?.observe(this, Observer { rateList ->
-            Log.d(TAG,"Rate List: " + arrayOf(mainViewModel?.allRates))
+            Log.d(TAG,"Rate List: allRates observed" )
             prepareRecyclerView(rateList)
+            if(mRateAdapter == null) {
+                prepareRecyclerView(rateList)
+                Log.d(TAG,"Rate List: adapter exist" )
+            }
+            else {
+                mRateAdapter?.updateRateList(rateList)
+                Log.d(TAG,"Rate List: adapter updadte" + Gson().toJson(rateList) )
+            }
         })
 
     }
-
-    override fun onPause() {
-        super.onPause()
-        //RateHelper.hideSoftKeyboard(this)
-    }
-
 
     fun prepareRecyclerView(rateList: List<RateItem>?) {
 
@@ -79,23 +71,12 @@ class MainActivity : AppCompatActivity(),RateAdapter.RateAdapterInterface {
 
     }
 
-
     override fun setServiceStatus(status : Boolean) {
         isSericeCallEnabled = status
     }
 
-    fun startSericeCall() {
-        Log.d("MainActivity", "start service")
-        handler.post(runnable)
-    }
-
-    fun stopSericeCall() {
-        Log.d("MainActivity", "stop service")
-        handler.removeCallbacks(runnable)
-    }
-
-
     override fun valueModified(value: Double) {
+        RateHelper.baseValue = value
         mainViewModel?.modifyRateListByValue(value)
     }
 }
