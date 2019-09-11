@@ -1,23 +1,24 @@
 package com.revolut.currencyrate.view
 
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
 import android.content.res.Configuration
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.DefaultItemAnimator
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.LinearLayoutManager
 import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.revolut.currencyrate.R
 import com.revolut.currencyrate.model.RateItem
 import com.revolut.currencyrate.viewmodel.MainViewModel
 import kotlinx.android.synthetic.main.activity_main.*
+import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent
+import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEventListener
 
 
-class MainActivity : AppCompatActivity(),RateAdapter.ApiCallSatus {
+class MainActivity : AppCompatActivity(),RateAdapter.RateAdapterInterface {
+
+    val TAG : String = "MainActiivty"
 
     var mainViewModel: MainViewModel? = null
     var mRateAdapter: RateAdapter? = null
@@ -25,7 +26,8 @@ class MainActivity : AppCompatActivity(),RateAdapter.ApiCallSatus {
 
 
     val handler = Handler(Looper.getMainLooper())
-    val runnable : Runnable = object : Runnable {
+
+    var runnable : Runnable = object : Runnable {
         override fun run() {
             fetchRateValues()
             handler.postDelayed(this, 1000)
@@ -39,47 +41,40 @@ class MainActivity : AppCompatActivity(),RateAdapter.ApiCallSatus {
         mainViewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
         swiperefresh.setOnRefreshListener { fetchRateValues() }
         startSericeCall()
+
+        KeyboardVisibilityEvent.setEventListener(
+            this,
+            object : KeyboardVisibilityEventListener {
+                override fun onVisibilityChanged(isOpen: Boolean) {
+                    if(isOpen)
+                        stopSericeCall()
+                    else
+                        startSericeCall()
+                }
+            })
     }
-
-
-
 
 
     fun fetchRateValues() {
         swiperefresh.setRefreshing(false)
-        mainViewModel!!.allRates.observe(this, Observer { rateList ->
+        mainViewModel?.allRates?.observe(this, Observer { rateList ->
+            Log.d(TAG,"Rate List: " + arrayOf(mainViewModel?.allRates))
             prepareRecyclerView(rateList)
         })
 
     }
 
-    override fun onResume() {
-        //isSericeCallEnabled = true
-       // RateHelper.hideSoftKeyboard()
-        super.onResume()
+    override fun onPause() {
+        super.onPause()
+        //RateHelper.hideSoftKeyboard(this)
     }
-
 
 
     fun prepareRecyclerView(rateList: List<RateItem>?) {
 
-        mRateAdapter = RateAdapter(rateList, object: RateAdapter.ApiCallSatus{
-            override fun setServiceStatus(isEnabled: Boolean) {
-                Log.d("MainActivity", "setServiceStatus -> " + isEnabled)
-                //isSericeCallEnabled = status
-                if(isEnabled){
-                    startSericeCall()
-                }else {
-                    stopSericeCall()
-                }
-            }
-        })
-        if (this.resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            rateRecyclerView.setLayoutManager(LinearLayoutManager(this))
-        } else {
-            rateRecyclerView.setLayoutManager(GridLayoutManager(this, 4))
-        }
-        rateRecyclerView.setItemAnimator(DefaultItemAnimator())
+        mRateAdapter = RateAdapter(rateList,this)
+        rateRecyclerView.setLayoutManager(androidx.recyclerview.widget.LinearLayoutManager(this))
+        rateRecyclerView.setItemAnimator(androidx.recyclerview.widget.DefaultItemAnimator())
         rateRecyclerView.setAdapter(mRateAdapter)
 
     }
@@ -97,5 +92,10 @@ class MainActivity : AppCompatActivity(),RateAdapter.ApiCallSatus {
     fun stopSericeCall() {
         Log.d("MainActivity", "stop service")
         handler.removeCallbacks(runnable)
+    }
+
+
+    override fun valueModified(value: Double) {
+        mainViewModel?.modifyRateListByValue(value)
     }
 }

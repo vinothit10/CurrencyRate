@@ -1,19 +1,21 @@
 package com.revolut.currencyrate.view
 
 import android.content.Context
-import android.support.v7.widget.RecyclerView
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.TextView
 import com.revolut.currencyrate.R
 import com.revolut.currencyrate.model.RateItem
 import java.util.*
 
 
-class RateAdapter(val rateList: List<RateItem>?, var apiInterface: ApiCallSatus) :
-    RecyclerView.Adapter<RateAdapter.ViewHolder>() {
-    lateinit var apiCallSatus: ApiCallSatus
+class RateAdapter(val rateList: List<RateItem>?, var apiInterface: RateAdapterInterface) :
+    androidx.recyclerview.widget.RecyclerView.Adapter<RateAdapter.ViewHolder>() {
+    lateinit var adapterInterface: RateAdapterInterface
     var mContext: Context? = null
 
     override fun getItemCount() = rateList!!.size
@@ -21,7 +23,7 @@ class RateAdapter(val rateList: List<RateItem>?, var apiInterface: ApiCallSatus)
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 
         this.mContext = parent.context
-        this.apiCallSatus = apiInterface
+        this.adapterInterface = apiInterface
 
         return ViewHolder(
             LayoutInflater.from(parent.context).inflate(
@@ -36,16 +38,37 @@ class RateAdapter(val rateList: List<RateItem>?, var apiInterface: ApiCallSatus)
         val key = rateList!!.get(position).rateKey.toString()
         val value = rateList!!.get(position).rateValue.toString()
         if (value != null) {
-            holder.tvTitle?.setText(key + ": " + value)
+            holder.countryEditText?.setText(value)
         }
-        holder.tvTitle.setOnFocusChangeListener { view, hasFocus ->
+        holder.countryCode.setText(key)
+
+        holder.countryEditText.setOnFocusChangeListener { view, hasFocus ->
             if (hasFocus) {
-                apiCallSatus.setServiceStatus(false)
                 swapItem(position, 0)
-                holder.tvTitle.showSoftInputOnFocus
-            } else {
-                apiCallSatus.setServiceStatus(true)
+                holder.countryEditText.showSoftInputOnFocus
             }
+        }
+
+        //holder.countryEditText.removeTextChangedListener(editedTextWatcher)
+        //if (position==0){
+            holder.countryEditText.addTextChangedListener(editedTextWatcher)
+    }
+
+     var editedTextWatcher = object : TextWatcher {
+        override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+        override fun onTextChanged(newValue: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+
+        override fun afterTextChanged(newValue: Editable?) {
+            val rateValue: String = newValue.toString().trim()
+            var value: Double
+            try {
+                value = rateValue.toDouble()
+            } catch (e: Exception) {
+                value = 0.0
+            }
+
+            rateList?.get(0)?.rateValue = value
+            adapterInterface.valueModified(value)
         }
     }
 
@@ -55,11 +78,13 @@ class RateAdapter(val rateList: List<RateItem>?, var apiInterface: ApiCallSatus)
     }
 
 
-    class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val tvTitle: EditText = itemView.findViewById(R.id.rate_value)
+    class ViewHolder(itemView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView) {
+        val countryEditText: EditText = itemView.findViewById(R.id.rateEditText)
+        val countryCode : (TextView)= itemView.findViewById(R.id.countryCode)
     }
 
-    interface ApiCallSatus {
+    interface RateAdapterInterface {
         fun setServiceStatus(status: Boolean)
+        fun valueModified(value: Double)
     }
 }

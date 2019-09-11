@@ -1,6 +1,6 @@
 package com.revolut.currencyrate.viewmodel
 
-import android.arch.lifecycle.MutableLiveData
+import androidx.lifecycle.MutableLiveData
 import android.util.Log
 import com.revolut.currencyrate.model.RateItem
 import com.revolut.currencyrate.networking.RestApiService
@@ -28,7 +28,7 @@ class RateRepository {
 
                     val response = request.await()
                     val rateResponse = response
-                    rateLiveData = RateHelper.getRateList(rateResponse?.rateList)
+                    rateLiveData = RateHelper.getRateList(rateResponse,1.0)
 
                 } catch (e: HttpException) {
                     Log.e(TAG, "Error while fetching api response", e)
