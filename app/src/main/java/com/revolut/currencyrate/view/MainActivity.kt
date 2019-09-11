@@ -13,8 +13,6 @@ import com.revolut.currencyrate.model.RateItem
 import com.revolut.currencyrate.utils.RateHelper
 import com.revolut.currencyrate.viewmodel.MainViewModel
 import kotlinx.android.synthetic.main.activity_main.*
-import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent
-import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEventListener
 
 
 class MainActivity : AppCompatActivity(),RateAdapter.RateAdapterInterface {
@@ -78,5 +76,9 @@ class MainActivity : AppCompatActivity(),RateAdapter.RateAdapterInterface {
     override fun valueModified(value: Double) {
         RateHelper.baseValue = value
         mainViewModel?.modifyRateListByValue(value)
+    }
+
+    override fun currencyModified(value: String) {
+        RateHelper.baseCurrency = value
     }
 }

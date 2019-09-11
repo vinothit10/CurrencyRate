@@ -15,8 +15,6 @@ class MainViewModel : ViewModel() {
     val mRepository = RateRepository()
     val allRates: MutableLiveData<List<RateItem>> get() = mRepository.getMutableLiveData()
 
-    private val latestRateList : MutableLiveData<List<RateItem>> = MutableLiveData()
-
     override fun onCleared() {
         super.onCleared()
         mRepository.completableJob.cancel()
@@ -27,7 +25,7 @@ class MainViewModel : ViewModel() {
         Log.d(TAG," modified value "+currentValue)
         val tmpRateList : MutableList<RateItem> = mutableListOf<RateItem>()
         synchronized(Object()) {
-
+            tmpRateList.add(RateItem(allRates.value?.get(0)!!.rateKey, 0.0))
             allRates.value?.forEach {
                 tmpRateList.add(RateItem(it.rateKey, it.rateValue * currentValue))
             }
@@ -35,7 +33,5 @@ class MainViewModel : ViewModel() {
             allRates.postValue(tmpRateList)
         }
     }
-
-    fun getCurrencyRates() : LiveData<List<RateItem>> = latestRateList
 
 }

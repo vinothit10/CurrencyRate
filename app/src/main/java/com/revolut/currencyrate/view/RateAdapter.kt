@@ -53,8 +53,9 @@ open class RateAdapter(var rateList: List<RateItem>?, var apiInterface: RateAdap
         holder.countryCode.setText(key)
 
         holder.rateRootLayout.setOnClickListener{
-            swapItem(position, 0)
-            holder.countryEditText.showSoftInputOnFocus
+            adapterInterface.currencyModified(key)
+            //swapItem(position, 0)
+            //holder.countryEditText.showSoftInputOnFocus
         }
 
         holder.countryEditText.removeTextChangedListener(editedTextWatcher)
@@ -118,6 +119,7 @@ open class RateAdapter(var rateList: List<RateItem>?, var apiInterface: RateAdap
     interface RateAdapterInterface {
         fun setServiceStatus(status: Boolean)
         fun valueModified(value: Double)
+        fun currencyModified(value: String)
     }
 
     fun updateRateList(newRatesList: List<RateItem>)  {
