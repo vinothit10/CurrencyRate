@@ -15,22 +15,28 @@ object RateHelper {
     val TAG : String = "RateHelper"
     var baseCurrency: String? = "EUR"
     var baseValue: Float = 1.0f
+    val LOCK: Any = Object()
 
     @JvmStatic
     fun getRateList(rates: Rates) :  MutableLiveData<List<RateItem>> {
+        Log.d(TAG," data modified value (entering lock) "+ baseValue)
         Log.d(TAG,"baseCurrency,baseValue, list "+ baseCurrency + " , " + baseValue + " , " + Gson().toJson(rates) )
-        baseCurrency = rates.base
-        var rateLiveData = MutableLiveData<List<RateItem>>()
-        synchronized(Object()) {
+
+        synchronized(LOCK) {
+            var rateLiveData = MutableLiveData<List<RateItem>>()
+            Log.d(TAG," data modified value (released lock) "+ baseValue)
+
+            baseCurrency = rates.base
             var rateList = mutableListOf<RateItem>()
             rateList.add(RateItem(baseCurrency!!, baseValue))
             rates.rateList?.forEach {
                 rateList.add(RateItem(it.key, it.value * baseValue))
-                Log.d(TAG,"item value, baseValue,sum "+ it.value + " , " + baseValue+ " , " +(it.value * baseValue) )
+                //Log.d(TAG,"item value, baseValue,sum "+ it.value + " , " + baseValue+ " , " +(it.value * baseValue) )
             }
             rateLiveData.value = rateList
+            return rateLiveData
         }
-        return rateLiveData
+
     }
 
 

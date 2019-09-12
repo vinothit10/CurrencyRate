@@ -50,9 +50,7 @@ open class RateAdapter(var rateList: List<RateItem>?, var apiInterface: RateAdap
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val key = rateList!!.get(position).rateKey.toString()
         val value = rateList!!.get(position).rateValue.toString()
-        if (value != null) {
-            holder.countryEditText?.setText(value)
-        }
+
         holder.countryCode.setText(key)
 
         val flagDrawable = ResourcesCompat.getDrawable(holder.flag.resources, getFlag(key,holder.flag), null)
@@ -81,8 +79,8 @@ open class RateAdapter(var rateList: List<RateItem>?, var apiInterface: RateAdap
             return super.onBindViewHolder(holder, position, payloads)
         }
 
-        if (rateSet.contains(RatesListComparator.RATE_MODIFIED)){
-           holder.updateValue(rateList!!.get(position),position)
+        if (rateSet.contains(RatesListComparator.RATE_MODIFIED)) {
+            holder.updateValue(rateList!!.get(position))
         }
     }
 
@@ -111,7 +109,7 @@ open class RateAdapter(var rateList: List<RateItem>?, var apiInterface: RateAdap
         val flag : (ImageView) =itemView.findViewById(R.id.countryIcon)
 
 
-        fun updateValue(currencyRate: RateItem, position: Int) {
+        fun updateValue(currencyRate: RateItem) {
             val updatedRateValue: String = "%.2f".format(currencyRate.rateValue)
             if (countryEditText.text.toString() != updatedRateValue) {
                 countryEditText.setText(updatedRateValue)
@@ -132,8 +130,7 @@ open class RateAdapter(var rateList: List<RateItem>?, var apiInterface: RateAdap
             return
         }
         rateQueueList.push(newRatesList)
-        if (rateQueueList.size>1) {
-            Log.d("Main RateAdapter","Modified rate List: " + Gson().toJson(rateQueueList))
+        if (rateQueueList.size > 1) {
             return
         }
 

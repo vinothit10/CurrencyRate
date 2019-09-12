@@ -7,11 +7,12 @@ import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
 import com.revolut.currencyrate.model.RateItem
 import com.revolut.currencyrate.utils.RateHelper
+import com.revolut.currencyrate.utils.RateHelper.LOCK
 
 class MainViewModel : ViewModel() {
 
     val TAG: String = "MainViewModel"
-    val LOCK: Any = Object()
+
     val mRepository = RateRepository()
     val allRates: MutableLiveData<List<RateItem>> get() = mRepository.getMutableLiveData()
 
@@ -21,10 +22,15 @@ class MainViewModel : ViewModel() {
     }
 
 
-    fun modifyRateListByValue() {
-        Log.d(TAG," modified value "+ RateHelper.baseValue)
+    fun modifyRateListByValue(updatedRate: Float) {
+        if(RateHelper.baseValue == updatedRate){
+            return
+        }
+
+        Log.d(TAG," data modified value "+ RateHelper.baseValue)
         val tmpRateList : MutableList<RateItem> = mutableListOf<RateItem>()
         synchronized(LOCK) {
+            RateHelper.baseValue = updatedRate
             allRates.value?.forEach {
                 tmpRateList.add(RateItem(it.rateKey, it.rateValue * RateHelper.baseValue))
             }

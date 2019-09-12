@@ -71,11 +71,8 @@ class MainActivity : AppCompatActivity(),RateAdapter.RateAdapterInterface {
     }
 
     override fun currencyValueModified(value: Float) {
-        if(RateHelper.baseValue == value){
-            return
-        }
-        RateHelper.baseValue = value
-        mainViewModel?.modifyRateListByValue()
+
+        mainViewModel?.modifyRateListByValue(value)
     }
 
     override fun currencyModified(currency: String, currencyValue: Float) {
