@@ -8,12 +8,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.DiffUtil
 import com.google.gson.Gson
 import com.jcorreia.currencyconverter.ui.RatesListComparator
 import com.revolut.currencyrate.R
 import com.revolut.currencyrate.model.RateItem
+import com.revolut.currencyrate.utils.RateHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -52,16 +55,24 @@ open class RateAdapter(var rateList: List<RateItem>?, var apiInterface: RateAdap
         }
         holder.countryCode.setText(key)
 
-        holder.rateRootLayout.setOnClickListener{
-            adapterInterface.currencyModified(key)
-            //swapItem(position, 0)
-            //holder.countryEditText.showSoftInputOnFocus
-        }
+        val flagDrawable = ResourcesCompat.getDrawable(holder.flag.resources, getFlag(key,holder.flag), null)
+        holder.flag.setImageDrawable(flagDrawable)
 
         holder.countryEditText.removeTextChangedListener(editedTextWatcher)
         if (position==0) {
+            holder.countryEditText.isEnabled = true
             holder.countryEditText.addTextChangedListener(editedTextWatcher)
+        }else{
+            holder.countryEditText.isEnabled = false
         }
+
+        if(position >0) {
+            holder.rateRootLayout.setOnClickListener {
+                adapterInterface.currencyModified(key, value.toFloat())
+            }
+        }
+
+
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int, payloads: MutableList<Any>) {
@@ -82,22 +93,15 @@ open class RateAdapter(var rateList: List<RateItem>?, var apiInterface: RateAdap
 
         override fun afterTextChanged(newValue: Editable?) {
             val rateValue: String = newValue.toString().trim()
-            var value: Double
+            var value: Float
             try {
-                value = rateValue.toDouble()
+                value = rateValue.toFloat()
             } catch (e: Exception) {
-                value = 0.0
+                value = 0.0f
             }
             rateList?.get(0)?.rateValue = value
-            adapterInterface.valueModified(value)
+            adapterInterface.currencyValueModified(value)
         }
-    }
-
-
-
-    fun swapItem(fromPos: Int, toPos: Int) {
-        Collections.swap(rateList, fromPos, toPos)
-        notifyItemMoved(fromPos, toPos)
     }
 
 
@@ -105,21 +109,21 @@ open class RateAdapter(var rateList: List<RateItem>?, var apiInterface: RateAdap
         val countryEditText: EditText = itemView.findViewById(R.id.rateEditText)
         val countryCode : (TextView)= itemView.findViewById(R.id.countryCode)
         val rateRootLayout : (View) = itemView.findViewById(R.id.rate_item_root_layout)
+        val flag : (ImageView) =itemView.findViewById(R.id.countryIcon)
+
 
         fun updateValue(currencyRate: RateItem, position: Int) {
-
-            val newValue: String = "%.2f".format(currencyRate.rateValue)
-
-            if (countryEditText.text.toString() != newValue) {
-                countryEditText.setText(newValue)
+            val updatedRateValue: String = "%.2f".format(currencyRate.rateValue)
+            if (countryEditText.text.toString() != updatedRateValue) {
+                countryEditText.setText(updatedRateValue)
             }
         }
     }
 
     interface RateAdapterInterface {
         fun setServiceStatus(status: Boolean)
-        fun valueModified(value: Double)
-        fun currencyModified(value: String)
+        fun currencyValueModified(value: Float)
+        fun currencyModified(currency: String, currencyRate: Float)
     }
 
     fun updateRateList(newRatesList: List<RateItem>)  {
@@ -151,5 +155,22 @@ open class RateAdapter(var rateList: List<RateItem>?, var apiInterface: RateAdap
             rateQueueList.clear()
         }
 
+    }
+
+    fun getFlag(currencyName: String, flag: ImageView): Int {
+        var currencyFlag: Int
+
+        val resources = flag.context.resources
+        val packageName = flag.context.packageName
+        val drawableName = "ic_"+currencyName.substring(0,2).toLowerCase()
+
+        currencyFlag = try {
+            resources.getIdentifier(drawableName, "drawable", packageName)
+        } catch (e: Exception) { 0 }
+
+        if (currencyFlag==0)
+            currencyFlag = R.drawable.ic_eu
+
+        return currencyFlag
     }
 }

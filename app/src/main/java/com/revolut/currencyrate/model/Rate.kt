@@ -104,4 +104,4 @@ data class Rate(
 
 )
 
-data class RateItem(var rateKey: String, var rateValue: Double)
+data class RateItem(var rateKey: String, var rateValue: Float)

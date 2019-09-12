@@ -2,6 +2,7 @@ package com.revolut.currencyrate.viewmodel
 
 import androidx.lifecycle.MutableLiveData
 import android.util.Log
+import com.google.gson.Gson
 import com.revolut.currencyrate.model.RateItem
 import com.revolut.currencyrate.networking.RestApiService
 import com.revolut.currencyrate.utils.RateHelper
@@ -22,7 +23,7 @@ class RateRepository {
 
     fun getMutableLiveData(): MutableLiveData<List<RateItem>> {
         coroutineScope.launch {
-            val request = thisApiCorService.getRates("latest", "EUR")
+            val request = thisApiCorService.getRates("latest", RateHelper.baseCurrency!!)
             withContext(Dispatchers.Main) {
                 try {
 

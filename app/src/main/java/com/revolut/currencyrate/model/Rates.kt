@@ -15,6 +15,6 @@ data class Rates(
 
     @SerializedName("rates")
     @Expose
-    val rateList: Map<String, Double>? = null
+    val rateList: Map<String, Float>? = null
 
 )

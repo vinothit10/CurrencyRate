@@ -21,13 +21,12 @@ class MainViewModel : ViewModel() {
     }
 
 
-    fun modifyRateListByValue(currentValue: Double) {
-        Log.d(TAG," modified value "+currentValue)
+    fun modifyRateListByValue() {
+        Log.d(TAG," modified value "+ RateHelper.baseValue)
         val tmpRateList : MutableList<RateItem> = mutableListOf<RateItem>()
         synchronized(Object()) {
-            tmpRateList.add(RateItem(allRates.value?.get(0)!!.rateKey, 0.0))
             allRates.value?.forEach {
-                tmpRateList.add(RateItem(it.rateKey, it.rateValue * currentValue))
+                tmpRateList.add(RateItem(it.rateKey, it.rateValue * RateHelper.baseValue))
             }
             Log.d(TAG, "Modified rate List: " + Gson().toJson(tmpRateList))
             allRates.postValue(tmpRateList)

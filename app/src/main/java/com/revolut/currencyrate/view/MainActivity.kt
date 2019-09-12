@@ -13,6 +13,7 @@ import com.revolut.currencyrate.model.RateItem
 import com.revolut.currencyrate.utils.RateHelper
 import com.revolut.currencyrate.viewmodel.MainViewModel
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.*
 
 
 class MainActivity : AppCompatActivity(),RateAdapter.RateAdapterInterface {
@@ -38,13 +39,11 @@ class MainActivity : AppCompatActivity(),RateAdapter.RateAdapterInterface {
         setContentView(R.layout.activity_main)
 
         mainViewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
-        swiperefresh.setOnRefreshListener { fetchRateValues() }
         handler.post(runnable)
     }
 
 
     fun fetchRateValues() {
-        swiperefresh.setRefreshing(false)
         mainViewModel?.allRates?.observe(this, Observer { rateList ->
             Log.d(TAG,"Rate List: allRates observed" )
             prepareRecyclerView(rateList)
@@ -73,12 +72,20 @@ class MainActivity : AppCompatActivity(),RateAdapter.RateAdapterInterface {
         isSericeCallEnabled = status
     }
 
-    override fun valueModified(value: Double) {
+    override fun currencyValueModified(value: Float) {
+        if(RateHelper.baseValue == value){
+            return
+        }
         RateHelper.baseValue = value
-        mainViewModel?.modifyRateListByValue(value)
+        mainViewModel?.modifyRateListByValue()
     }
 
-    override fun currencyModified(value: String) {
-        RateHelper.baseCurrency = value
+    override fun currencyModified(currency: String, currencyValue: Float) {
+        if(RateHelper.baseCurrency == currency) {
+            return
+        }
+        RateHelper.baseCurrency = currency
+        RateHelper.baseValue = currencyValue
+        handler.post(runnable)
     }
 }
