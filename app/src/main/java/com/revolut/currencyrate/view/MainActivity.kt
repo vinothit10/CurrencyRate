@@ -22,7 +22,6 @@ class MainActivity : AppCompatActivity(),RateAdapter.RateAdapterInterface {
 
     var mainViewModel: MainViewModel? = null
     var mRateAdapter: RateAdapter? = null
-    var isSericeCallEnabled: Boolean = true
 
 
     val handler = Handler(Looper.getMainLooper())
@@ -46,14 +45,13 @@ class MainActivity : AppCompatActivity(),RateAdapter.RateAdapterInterface {
     fun fetchRateValues() {
         mainViewModel?.allRates?.observe(this, Observer { rateList ->
             Log.d(TAG,"Rate List: allRates observed" )
-            prepareRecyclerView(rateList)
+
             if(mRateAdapter == null) {
                 prepareRecyclerView(rateList)
                 Log.d(TAG,"Rate List: adapter exist" )
             }
             else {
                 mRateAdapter?.updateRateList(rateList)
-                Log.d(TAG,"Rate List: adapter updadte" + Gson().toJson(rateList) )
             }
         })
 
@@ -65,11 +63,11 @@ class MainActivity : AppCompatActivity(),RateAdapter.RateAdapterInterface {
         rateRecyclerView.setLayoutManager(androidx.recyclerview.widget.LinearLayoutManager(this))
         rateRecyclerView.setItemAnimator(androidx.recyclerview.widget.DefaultItemAnimator())
         rateRecyclerView.setAdapter(mRateAdapter)
-
     }
 
-    override fun setServiceStatus(status : Boolean) {
-        isSericeCallEnabled = status
+
+    override fun setAdapterPosition() {
+        rateRecyclerView.scrollToPosition(0)
     }
 
     override fun currencyValueModified(value: Float) {

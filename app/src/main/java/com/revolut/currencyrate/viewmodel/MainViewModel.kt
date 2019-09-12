@@ -11,7 +11,7 @@ import com.revolut.currencyrate.utils.RateHelper
 class MainViewModel : ViewModel() {
 
     val TAG: String = "MainViewModel"
-
+    val LOCK: Any = Object()
     val mRepository = RateRepository()
     val allRates: MutableLiveData<List<RateItem>> get() = mRepository.getMutableLiveData()
 
@@ -24,11 +24,10 @@ class MainViewModel : ViewModel() {
     fun modifyRateListByValue() {
         Log.d(TAG," modified value "+ RateHelper.baseValue)
         val tmpRateList : MutableList<RateItem> = mutableListOf<RateItem>()
-        synchronized(Object()) {
+        synchronized(LOCK) {
             allRates.value?.forEach {
                 tmpRateList.add(RateItem(it.rateKey, it.rateValue * RateHelper.baseValue))
             }
-            Log.d(TAG, "Modified rate List: " + Gson().toJson(tmpRateList))
             allRates.postValue(tmpRateList)
         }
     }

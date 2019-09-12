@@ -58,12 +58,11 @@ open class RateAdapter(var rateList: List<RateItem>?, var apiInterface: RateAdap
         val flagDrawable = ResourcesCompat.getDrawable(holder.flag.resources, getFlag(key,holder.flag), null)
         holder.flag.setImageDrawable(flagDrawable)
 
+        holder.countryEditText.isEnabled = position == 0
+
         holder.countryEditText.removeTextChangedListener(editedTextWatcher)
         if (position==0) {
-            holder.countryEditText.isEnabled = true
             holder.countryEditText.addTextChangedListener(editedTextWatcher)
-        }else{
-            holder.countryEditText.isEnabled = false
         }
 
         if(position >0) {
@@ -97,7 +96,7 @@ open class RateAdapter(var rateList: List<RateItem>?, var apiInterface: RateAdap
             try {
                 value = rateValue.toFloat()
             } catch (e: Exception) {
-                value = 0.0f
+                value = 0f
             }
             rateList?.get(0)?.rateValue = value
             adapterInterface.currencyValueModified(value)
@@ -121,7 +120,7 @@ open class RateAdapter(var rateList: List<RateItem>?, var apiInterface: RateAdap
     }
 
     interface RateAdapterInterface {
-        fun setServiceStatus(status: Boolean)
+        fun setAdapterPosition()
         fun currencyValueModified(value: Float)
         fun currencyModified(currency: String, currencyRate: Float)
     }
@@ -145,10 +144,14 @@ open class RateAdapter(var rateList: List<RateItem>?, var apiInterface: RateAdap
 
         val ratesAdapter = this
         val result = DiffUtil.calculateDiff(RatesListComparator(rateList!!, latest))
+        val isCurrencyModified: Boolean = (rateList!!.get(0).rateKey != latest!!.get(0).rateKey)
         rateList = latest
         rateQueueList.remove(latest)
         GlobalScope.launch(Dispatchers.Main) {
             result.dispatchUpdatesTo(ratesAdapter)
+            if(isCurrencyModified){
+                  adapterInterface.setAdapterPosition()
+            }
         }
         if (rateQueueList.size > 0) {
             compareRateListData(rateQueueList.pop())
